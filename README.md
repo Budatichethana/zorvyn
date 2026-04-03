@@ -1,112 +1,140 @@
 # Zorvyn Finance Dashboard
 
-Zorvyn is a responsive finance dashboard built with React, Vite, TypeScript, Tailwind CSS, Zustand, and Recharts. It provides a polished interface for tracking transactions, viewing summary metrics, exploring finance insights, and switching between viewer and admin roles.
+Zorvyn is a responsive personal finance dashboard built using React, Vite, and TypeScript. It provides a clean interface for tracking transactions, visualizing financial data, and managing insights with role-based access.
+
+---
+
+## Live Demo
+
+https://zorvyn-lilac.vercel.app
+
+---
 
 ## Project Overview
 
-This project is designed as a lightweight financial operations dashboard. It focuses on clarity, responsive layouts, and a product-like user experience rather than a starter-template feel. The app includes persistent transaction data, global UI state, role-based actions, dark mode, and finance-focused charts.
+Zorvyn is designed as a product-oriented dashboard focused on usability, performance, and scalability. It simulates a real-world financial management system with persistent state and dynamic data handling.
 
-## Features Implemented
+---
 
-- Role-based UI with Viewer and Admin modes
-- Top navbar with app title, role switch, and dark mode toggle
-- Fixed left sidebar navigation with icons and labels
-- Finance summary cards for balance, income, and expenses
-- Recharts-based dashboard charts with mock financial data
-- Transactions table with search, filter, sort, and empty states
-- Admin-only add and delete transaction actions
-- Global Zustand store for shared state management
-- Persistent transactions and UI preferences via localStorage
-- Responsive layout for mobile and desktop
-- Reusable UI primitives for cards, buttons, and section containers
+## Features
+
+* Role-based access:
+
+  * Viewer: Read-only access
+  * Admin: Add and delete transactions
+
+* Financial summary:
+
+  * Total balance, income, and expenses
+  * Dynamic calculations based on transactions
+
+* Data visualization:
+
+  * Interactive charts built using Recharts
+  * Financial trend insights
+
+* Transactions management:
+
+  * Search, filter, and sort functionality
+  * Empty state handling
+  * Admin-only CRUD operations
+
+* UI and experience:
+
+  * Responsive design for mobile and desktop
+  * Dark mode with persistent preference
+
+* State management:
+
+  * Centralized state using Zustand
+  * Synchronization across components
+
+* Persistence:
+
+  * LocalStorage for transactions and UI settings
+
+---
 
 ## Tech Stack
 
-- React 19
-- TypeScript
-- Vite
-- Tailwind CSS
-- Zustand
-- Recharts
-- Lucide React
+* React 19
+* TypeScript
+* Vite
+* Tailwind CSS
+* Zustand
+* Recharts
+* Lucide React
+
+---
 
 ## How to Run the Project
 
 ### Prerequisites
 
-- Node.js 18 or later
-- npm
+* Node.js 18 or later
+* npm
 
 ### Install dependencies
 
-```bash
+```bash id="9u3k2x"
 npm install
 ```
 
-### Start the development server
+### Start development server
 
-```bash
+```bash id="2h9x4c"
 npm run dev
 ```
 
-### Create a production build
+### Build for production
 
-```bash
+```bash id="p4c7dq"
 npm run build
 ```
 
-### Preview the production build
+### Preview production build
 
-```bash
+```bash id="x8r1kz"
 npm run preview
 ```
 
-### Optional lint check
-
-```bash
-npm run lint
-```
+---
 
 ## Folder Structure
 
-```text
+```text id="m7v2qa"
 zorvyn/
 ├─ src/
-│  ├─ assets/
 │  ├─ components/
-│  │  ├─ ui/
-│  │  │  ├─ Button.tsx
-│  │  │  ├─ Card.tsx
-│  │  │  └─ SectionContainer.tsx
-│  │  ├─ Dashboard.tsx
-│  │  ├─ Insights.tsx
-│  │  ├─ Sidebar.tsx
-│  │  └─ Transactions.tsx
 │  ├─ store/
-│  │  └─ appStore.ts
 │  ├─ utils/
-│  │  └─ currency.ts
 │  ├─ App.tsx
-│  ├─ App.css
-│  ├─ index.css
 │  └─ main.tsx
 ├─ public/
-├─ tailwind.config.js
-├─ postcss.config.js
-├─ eslint.config.js
 ├─ package.json
 └─ vite.config.ts
 ```
 
+---
+
 ## Approach
 
-The app is structured around a single global Zustand store so that the dashboard, transactions table, role switch, filters, and theme remain in sync across the UI. Transactions are persisted to localStorage to retain data after refreshes, while Tailwind provides the visual system for spacing, responsive layout, hover states, and dark mode.
+The application uses a centralized Zustand store to manage global state, ensuring consistency across dashboard components, filters, and UI preferences. Transactions are persisted using localStorage to maintain data across sessions.
 
-Reusable UI components such as Card, Button, and SectionContainer keep the interface consistent and reduce repetition. Recharts is used for the finance visualizations, and the data is mocked but calculated dynamically where it matters, such as totals, filtering, and insights.
+The UI is built using reusable components such as Card, Button, and SectionContainer to ensure consistency and scalability. Tailwind CSS is used for responsive design and styling, while Recharts handles data visualization.
 
-## Notes
+---
 
-- The app is currently seeded with mock finance data.
-- Admin users can add and delete transactions.
-- Viewer users can only inspect the data.
-- Dark mode is persisted and can be toggled from the navbar.
+## Future Improvements
+
+* Backend integration (Node.js, Firebase, or similar)
+* User authentication and authorization
+* Export functionality (PDF or CSV)
+* Real-time data updates
+
+---
+
+## Author
+
+Chethana Budati
+GitHub: https://github.com/Budatichethana
