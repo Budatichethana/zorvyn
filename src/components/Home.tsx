@@ -1,14 +1,14 @@
 import React from 'react';
-import { PiggyBank, Wallet, TriangleAlert, TrendingUp, ReceiptText, Sparkles, ArrowUpRight, ArrowDownRight } from 'lucide-react';
+import { PiggyBank, Wallet, TriangleAlert, TrendingUp, Sparkles, ArrowUpRight, ArrowDownRight } from 'lucide-react';
 import SectionContainer from './ui/SectionContainer';
 import Card from './ui/Card';
 import Button from './ui/Button';
 import { useAppStore } from '../store/appStore';
 import { formatCurrency } from '../utils/currency';
 import AnimatedNumber from './ui/AnimatedNumber';
-
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const Home: React.FC = () => {
-  const { role, transactions, setActiveSection } = useAppStore();
+  const { transactions, setActiveSection } = useAppStore();
 
   const groupedByMonth = transactions.reduce<Record<string, { income: number; expense: number; expenseByCategory: Record<string, number> }>>((acc, transaction) => {
     const monthKey = transaction.date.slice(0, 7);
@@ -50,6 +50,8 @@ const Home: React.FC = () => {
     : { income: 0, expense: 0, expenseByCategory: {} };
 
   const currentMonthSavings = currentMonth.income - currentMonth.expense;
+  const lastMonthSavings = lastMonth.income - lastMonth.expense;
+  const savingsDelta = currentMonthSavings - lastMonthSavings;
 
   const topSpendingCategoryEntry = Object.entries(currentMonth.expenseByCategory)
     .sort(([, a], [, b]) => b - a)[0];
@@ -57,9 +59,19 @@ const Home: React.FC = () => {
     ? { name: topSpendingCategoryEntry[0], amount: topSpendingCategoryEntry[1] }
     : { name: 'No expenses yet', amount: 0 };
 
-  const monthlySpendPercent = currentMonth.expense > 0
+  const topCategoryExpenseShare = currentMonth.expense > 0
     ? Math.round((topSpendingCategory.amount / currentMonth.expense) * 100)
     : 0;
+
+  const spendingRatio = currentMonth.income > 0
+    ? Math.round((currentMonth.expense / currentMonth.income) * 100)
+    : 0;
+  const previousSpendingRatio = lastMonth.income > 0
+    ? Math.round((lastMonth.expense / lastMonth.income) * 100)
+    : 0;
+  const spendingRatioDelta = spendingRatio - previousSpendingRatio;
+  const savingsTrendDirection = savingsDelta > 0 ? 'up' : savingsDelta < 0 ? 'down' : 'flat';
+  const spendingTrendDirection = spendingRatioDelta > 0 ? 'up' : spendingRatioDelta < 0 ? 'down' : 'flat';
 
   const incomeGrowthPercent = lastMonth.income > 0
     ? Math.round(((currentMonth.income - lastMonth.income) / lastMonth.income) * 100)
@@ -67,7 +79,7 @@ const Home: React.FC = () => {
 
   const insights = [
     currentMonth.expense > 0
-      ? `You spent ${monthlySpendPercent}% of your expenses on ${topSpendingCategory.name} this month.`
+      ? `You spent ${topCategoryExpenseShare}% of your expenses on ${topSpendingCategory.name} this month.`
       : 'No expense data for this month yet.',
     monthKeys.length > 1
       ? `Your income ${incomeGrowthPercent >= 0 ? 'increased' : 'decreased'} by ${Math.abs(incomeGrowthPercent)}% compared to last month.`
@@ -78,6 +90,20 @@ const Home: React.FC = () => {
       : 'Add expenses to see your top spending category.',
   ];
 
+  type SummaryCard = {
+    title: string;
+    value: number;
+    icon: React.ComponentType<{ size?: number; className?: string }>;
+    helper: string;
+    valueClass: string;
+    iconWrapClass: string;
+    iconClass: string;
+    displayAsCategory?: boolean;
+    displayAsPercent?: boolean;
+    trendDirection?: 'up' | 'down' | 'flat';
+    trendText?: string;
+  };
+
   const summaryCards = [
     {
       title: 'Total Savings',
@@ -87,6 +113,11 @@ const Home: React.FC = () => {
       valueClass: currentMonthSavings >= 0 ? 'text-emerald-600 dark:text-emerald-300' : 'text-red-600 dark:text-red-300',
       iconWrapClass: currentMonthSavings >= 0 ? 'bg-emerald-100 dark:bg-emerald-900/30' : 'bg-red-100 dark:bg-red-900/30',
       iconClass: currentMonthSavings >= 0 ? 'text-emerald-600 dark:text-emerald-300' : 'text-red-600 dark:text-red-300',
+      trendDirection: savingsTrendDirection,
+      trendText:
+        savingsTrendDirection === 'flat'
+          ? 'No change vs last month'
+          : `${formatCurrency(Math.abs(savingsDelta))} vs last month`,
     },
     {
       title: 'Top Spending Category',
@@ -97,16 +128,23 @@ const Home: React.FC = () => {
       iconWrapClass: 'bg-red-100 dark:bg-red-900/30',
       iconClass: 'text-red-600 dark:text-red-300',
       displayAsCategory: true,
+      displayAsPercent: false,
     },
     {
-      title: 'Monthly Spend %',
-      value: monthlySpendPercent,
+      title: 'Spending Ratio',
+      value: spendingRatio,
       icon: TrendingUp,
-      helper: `${monthlySpendPercent}% spent on ${topSpendingCategory.name}`,
-      valueClass: monthlySpendPercent >= 50 ? 'text-red-600 dark:text-red-300' : 'text-emerald-600 dark:text-emerald-300',
-      iconWrapClass: monthlySpendPercent >= 50 ? 'bg-red-100 dark:bg-red-900/30' : 'bg-emerald-100 dark:bg-emerald-900/30',
-      iconClass: monthlySpendPercent >= 50 ? 'text-red-600 dark:text-red-300' : 'text-emerald-600 dark:text-emerald-300',
+      helper: `${spendingRatio}% of your income spent this month`,
+      valueClass: 'text-red-600 dark:text-red-300',
+      iconWrapClass: 'bg-red-100 dark:bg-red-900/30',
+      iconClass: 'text-red-600 dark:text-red-300',
+      displayAsCategory: false,
       displayAsPercent: true,
+      trendDirection: spendingTrendDirection,
+      trendText:
+        spendingTrendDirection === 'flat'
+          ? 'No change vs last month'
+          : `${Math.abs(spendingRatioDelta)}% vs last month`,
     },
     {
       title: 'Net Balance',
@@ -116,8 +154,10 @@ const Home: React.FC = () => {
       valueClass: netBalance >= 0 ? 'text-emerald-600 dark:text-emerald-300' : 'text-red-600 dark:text-red-300',
       iconWrapClass: netBalance >= 0 ? 'bg-emerald-100 dark:bg-emerald-900/30' : 'bg-red-100 dark:bg-red-900/30',
       iconClass: netBalance >= 0 ? 'text-emerald-600 dark:text-emerald-300' : 'text-red-600 dark:text-red-300',
+      displayAsCategory: false,
+      displayAsPercent: false,
     },
-  ] as const;
+  ]satisfies SummaryCard[];
 
   return (
     <SectionContainer title="Personal Finance Summary">
@@ -145,7 +185,28 @@ const Home: React.FC = () => {
                   <Icon size={18} className={card.iconClass} />
                 </div>
               </div>
-              <p className="mt-3 text-xs text-gray-500 dark:text-gray-400">{card.helper}</p>
+              <p className="mt-3 text-xs text-gray-500 dark:text-gray-400">
+                {card.title === 'Spending Ratio' ? 'of your income spent this month' : card.helper}
+              </p>
+              {'trendDirection' in card && card.trendText ? (
+                <div
+                  className={`mt-2 inline-flex items-center gap-1 text-xs font-semibold ${
+                    card.trendDirection === 'flat'
+                      ? 'text-gray-500 dark:text-gray-400'
+                      : card.title === 'Spending Ratio'
+                        ? card.trendDirection === 'up'
+                          ? 'text-red-600 dark:text-red-300'
+                          : 'text-emerald-600 dark:text-emerald-300'
+                        : card.trendDirection === 'up'
+                          ? 'text-emerald-600 dark:text-emerald-300'
+                          : 'text-red-600 dark:text-red-300'
+                  }`}
+                >
+                  {card.trendDirection === 'up' ? <ArrowUpRight size={14} /> : null}
+                  {card.trendDirection === 'down' ? <ArrowDownRight size={14} /> : null}
+                  <span>{card.trendText}</span>
+                </div>
+              ) : null}
             </Card>
           );
         })}

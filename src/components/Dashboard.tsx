@@ -112,7 +112,8 @@ const Dashboard: React.FC = () => {
       label: 'Total Balance', 
       value: totalBalance,
       change: '+18.2%', 
-      positive: true,
+      trendDirection: 'up' as const,
+      metricType: 'balance' as const,
       icon: Wallet,
       color: 'bg-emerald-100 dark:bg-emerald-900/40',
       iconColor: 'text-emerald-700 dark:text-emerald-300',
@@ -122,7 +123,8 @@ const Dashboard: React.FC = () => {
       label: 'Total Income', 
       value: totalIncome,
       change: '+5.3%', 
-      positive: true,
+      trendDirection: 'up' as const,
+      metricType: 'income' as const,
       icon: TrendingUp,
       color: 'bg-green-100 dark:bg-green-900/40',
       iconColor: 'text-green-700 dark:text-green-300',
@@ -131,8 +133,9 @@ const Dashboard: React.FC = () => {
     { 
       label: 'Total Expenses', 
       value: totalExpenses,
-      change: '+2.1%', 
-      positive: false,
+      change: '2.1%',
+      trendDirection: 'down' as const,
+      metricType: 'expense' as const,
       icon: TrendingDown,
       color: 'bg-red-100 dark:bg-red-900/40',
       iconColor: 'text-red-700 dark:text-red-300',
@@ -147,6 +150,10 @@ const Dashboard: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         {stats.map((stat) => {
           const Icon = stat.icon;
+          const isTrendPositive = stat.metricType === 'expense'
+            ? stat.trendDirection === 'down'
+            : stat.trendDirection === 'up';
+          const trendArrow = stat.trendDirection === 'up' ? '↑' : '↓';
           return (
             <Card key={stat.label} className="relative overflow-hidden">
               <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-transparent via-gray-200 to-transparent dark:via-dark-600" />
@@ -161,8 +168,8 @@ const Dashboard: React.FC = () => {
                   <Icon className={stat.iconColor} size={24} />
                 </div>
               </div>
-              <p className={`text-sm font-medium ${stat.positive ? 'text-green-600' : 'text-red-600'}`}>
-                {stat.change}
+              <p className={`text-sm font-medium ${isTrendPositive ? 'text-green-600' : 'text-red-600'}`}>
+                {stat.change} {trendArrow}
               </p>
             </Card>
           );

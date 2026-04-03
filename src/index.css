@@ -85,6 +85,43 @@
   .toast-pop {
     animation: toast-pop 220ms ease-out;
   }
+
+  .dropdown-pop {
+    animation: dropdown-pop 180ms ease-out;
+    transform-origin: top center;
+  }
+
+  .role-dropdown-trigger {
+    @apply w-full px-3 py-2.5 rounded-xl border border-slate-600/70 bg-slate-800 text-gray-100 flex items-center justify-between shadow-sm transition-all duration-200 hover:bg-slate-700/90 hover:border-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500/70 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-dark-900;
+  }
+
+  .role-dropdown-trigger.open {
+    @apply rounded-b-none border-b-slate-700/80;
+  }
+
+  .role-dropdown-menu {
+    @apply absolute top-full right-0 left-0 mt-0 rounded-b-xl rounded-t-none border border-slate-600/70 border-t-0 bg-slate-800 text-gray-100 p-1.5 shadow-[0_10px_20px_rgba(2,6,23,0.24)] z-40;
+  }
+
+  .role-dropdown-option {
+    @apply w-full flex items-center justify-between text-left px-3 py-2 rounded-lg text-sm text-gray-200 transition-all duration-150 hover:bg-slate-700 hover:text-white;
+  }
+
+  .role-dropdown-option.highlighted {
+    @apply bg-slate-700/90 text-white;
+  }
+
+  .role-dropdown-option.selected {
+    @apply bg-primary-900/45 text-primary-100 border border-primary-500/40;
+  }
+
+  .sidebar-collapsed-tooltip {
+    @apply pointer-events-none absolute left-full ml-3 px-2.5 py-1.5 rounded-lg bg-slate-800 text-gray-100 text-xs font-medium border border-slate-600/80 opacity-0 -translate-x-1 transition-all duration-200 whitespace-nowrap;
+  }
+
+  .group:hover > .sidebar-collapsed-tooltip {
+    @apply opacity-100 translate-x-0;
+  }
 }
 
 @keyframes toast-pop {
@@ -108,5 +145,17 @@
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes dropdown-pop {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
   }
 }
