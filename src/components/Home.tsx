@@ -2,14 +2,12 @@ import React from 'react';
 import { PiggyBank, Wallet, TriangleAlert, TrendingUp, Sparkles, ArrowUpRight, ArrowDownRight } from 'lucide-react';
 import SectionContainer from './ui/SectionContainer';
 import Card from './ui/Card';
-import Button from './ui/Button';
 import { useAppStore } from '../store/appStore';
 import { formatCurrency } from '../utils/currency';
 import AnimatedNumber from './ui/AnimatedNumber';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+
 const Home: React.FC = () => {
   const { transactions, setActiveSection } = useAppStore();
-
   const groupedByMonth = transactions.reduce<Record<string, { income: number; expense: number; expenseByCategory: Record<string, number> }>>((acc, transaction) => {
     const monthKey = transaction.date.slice(0, 7);
     if (!acc[monthKey]) {
@@ -77,18 +75,47 @@ const Home: React.FC = () => {
     ? Math.round(((currentMonth.income - lastMonth.income) / lastMonth.income) * 100)
     : 0;
 
+  const getIncomeInsight = () => {
+    if (monthKeys.length <= 1) {
+      return 'Income comparison will appear once two months of data are available.';
+    }
+
+    if (lastMonth.income === 0 && currentMonth.income > 0) {
+      return 'You started earning income this month compared to last month.';
+    }
+
+    if (lastMonth.income > 0 && currentMonth.income === 0) {
+      return 'Your income decreased significantly compared to last month.';
+    }
+
+    if (incomeGrowthPercent <= -75) {
+      return 'Your income decreased significantly compared to last month.';
+    }
+
+    if (incomeGrowthPercent < 0) {
+      return `Your income decreased by ${Math.abs(incomeGrowthPercent)}% compared to last month.`;
+    }
+
+    if (incomeGrowthPercent >= 75) {
+      return 'Your income increased significantly compared to last month.';
+    }
+
+    return `Your income increased by ${incomeGrowthPercent}% compared to last month.`;
+  };
+
   const insights = [
     currentMonth.expense > 0
-      ? `You spent ${topCategoryExpenseShare}% of your expenses on ${topSpendingCategory.name} this month.`
-      : 'No expense data for this month yet.',
+      ? `${topCategoryExpenseShare}% of your expenses were on ${topSpendingCategory.name} this month.`
+      : 'Start adding expenses to unlock spending insights.',
     monthKeys.length > 1
-      ? `Your income ${incomeGrowthPercent >= 0 ? 'increased' : 'decreased'} by ${Math.abs(incomeGrowthPercent)}% compared to last month.`
-      : 'Income comparison will appear once two months of data are available.',
-    `You saved ${formatCurrency(currentMonthSavings)} this month.`,
-    topSpendingCategory.amount > 0
-      ? `Your highest expense was ${topSpendingCategory.name} at ${formatCurrency(topSpendingCategory.amount)}.`
-      : 'Add expenses to see your top spending category.',
-  ];
+      ? currentMonth.income >= lastMonth.income
+        ? 'Your income increased compared to last month.'
+        : 'Your income decreased compared to last month.'
+      : getIncomeInsight(),
+    currentMonthSavings >= 0
+      ? `You saved ${formatCurrency(currentMonthSavings)} this month.`
+      : `You overspent by ${formatCurrency(Math.abs(currentMonthSavings))} this month.`,
+  ].slice(0, 3);
 
   type SummaryCard = {
     title: string;
@@ -165,8 +192,8 @@ const Home: React.FC = () => {
         {summaryCards.map((card) => {
           const Icon = card.icon;
           return (
-            <Card key={card.title}>
-              <div className="flex items-start justify-between">
+            <Card key={card.title} className="h-full transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
+              <div className="flex items-start justify-between min-h-[72px]">
                 <div>
                   <p className="panel-label mb-1">{card.title}</p>
                   {card.displayAsCategory ? (
@@ -177,7 +204,7 @@ const Home: React.FC = () => {
                     </p>
                   ) : (
                     <p className={`text-xl font-bold ${card.valueClass}`}>
-                      <AnimatedNumber value={card.value} formatter={(v) => formatCurrency(Math.round(v))} />
+                      <AnimatedNumber value={card.value} formatter={(v) => formatCurrency(v)} />
                     </p>
                   )}
                 </div>
@@ -212,8 +239,7 @@ const Home: React.FC = () => {
         })}
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mt-6">
-        <Card className="xl:col-span-2">
+      <Card className="mt-6">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Personalized Insights</h3>
           <div className="space-y-3">
             {insights.map((insight) => (
@@ -225,43 +251,29 @@ const Home: React.FC = () => {
               </div>
             ))}
           </div>
-        </Card>
-
-        <Card>
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Quick Financial Overview</h3>
-          <div className="space-y-3">
-            <div className="rounded-xl border border-green-200 dark:border-green-800 bg-green-50/60 dark:bg-green-900/20 p-3">
-              <p className="text-xs text-green-700 dark:text-green-300">Total Income</p>
-              <p className="text-lg font-semibold text-green-700 dark:text-green-300">{formatCurrency(totalIncome)}</p>
-            </div>
-            <div className="rounded-xl border border-red-200 dark:border-red-800 bg-red-50/60 dark:bg-red-900/20 p-3">
-              <p className="text-xs text-red-700 dark:text-red-300">Total Expenses</p>
-              <p className="text-lg font-semibold text-red-700 dark:text-red-300">{formatCurrency(totalExpenses)}</p>
-            </div>
-            <div className="rounded-xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50/60 dark:bg-emerald-900/20 p-3">
-              <p className="text-xs text-emerald-700 dark:text-emerald-300">Savings</p>
-              <p className="text-lg font-semibold text-emerald-700 dark:text-emerald-300">{formatCurrency(currentMonthSavings)}</p>
-            </div>
-          </div>
-        </Card>
-      </div>
+      </Card>
 
       <Card className="mt-6">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Recent Activity</h3>
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" onClick={() => setActiveSection('transactions')}>
-              View all
-            </Button>
-            <Button variant="secondary" onClick={() => setActiveSection('dashboard')}>
-              Open Dashboard
-            </Button>
-          </div>
-        </div>
+       <div className="flex items-center justify-between">
+
+  <h2 className="text-lg font-semibold">
+    Recent Activity
+  </h2>
+
+  <button
+  onClick={() => setActiveSection("dashboard")}
+  className="text-blue-500 hover:underline font-medium"
+>
+  View all →
+</button>
+
+  </div>
+
 
         {recentTransactions.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-gray-300 dark:border-dark-600 p-8 text-center">
-            <p className="text-sm text-gray-500 dark:text-gray-400">No transactions available yet.</p>
+          <div className="rounded-xl border border-dashed border-gray-300 dark:border-dark-600 p-8 text-center flex flex-col items-center justify-center gap-1">
+            <p className="text-base font-semibold text-gray-900 dark:text-white">No transactions yet</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Add your first transaction to get started</p>
           </div>
         ) : (
           <div className="space-y-2">

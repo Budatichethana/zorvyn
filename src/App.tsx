@@ -11,6 +11,7 @@ import Button from './components/ui/Button'
 
 function App() {
   const { activeSection, role, setRole, theme, toggleTheme } = useAppStore()
+  const isDark = theme === 'dark'
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
   const [roleMenuOpen, setRoleMenuOpen] = useState(false)
@@ -24,7 +25,6 @@ function App() {
   ]
 
   useEffect(() => {
-    const isDark = theme === 'dark'
     const root = document.documentElement
     const body = document.body
 
@@ -193,17 +193,21 @@ function App() {
                 <button
                   id="role-select"
                   type="button"
-                  className={`role-dropdown-trigger ${roleMenuOpen ? 'open' : ''}`}
+                  className={`w-full px-3 py-2.5 rounded-xl flex items-center justify-between transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500/70 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-dark-900 ${
+                    isDark
+                      ? 'bg-slate-800 text-white border border-slate-700 hover:bg-slate-700'
+                      : 'bg-white text-gray-900 border border-gray-200 shadow-md hover:bg-gray-50'
+                  } ${roleMenuOpen ? 'rounded-b-none' : ''}`}
                   onClick={() => setRoleMenuOpen((prev) => !prev)}
                   onKeyDown={handleRoleButtonKeyDown}
                   aria-haspopup="listbox"
                   aria-expanded={roleMenuOpen}
                   aria-controls="role-listbox"
                 >
-                  <span className="text-sm font-medium text-gray-100">{selectedRoleLabel}</span>
+                  <span className="text-sm font-medium">{selectedRoleLabel}</span>
                   <ChevronDown
                     size={16}
-                    className={`text-gray-300 transition-transform duration-200 ${roleMenuOpen ? 'rotate-180' : ''}`}
+                    className={`transition-transform duration-200 ${isDark ? 'text-gray-300' : 'text-gray-500'} ${roleMenuOpen ? 'rotate-180' : ''}`}
                   />
                 </button>
 
@@ -214,7 +218,11 @@ function App() {
                     aria-label="Select role"
                     tabIndex={-1}
                     ref={roleListRef}
-                    className="role-dropdown-menu dropdown-pop"
+                    className={`dropdown-pop absolute top-full right-0 left-0 mt-0 rounded-b-xl rounded-t-none p-1.5 z-40 transition-all duration-200 ${
+                      isDark
+                        ? 'bg-slate-800 text-white border border-slate-700 border-t-0 shadow-[0_10px_20px_rgba(2,6,23,0.24)]'
+                        : 'bg-white text-gray-900 border border-gray-200 border-t-0 shadow-md'
+                    }`}
                     onKeyDown={handleRoleListKeyDown}
                     aria-activedescendant={`role-option-${roleOptions[highlightedRoleIndex]?.value}`}
                   >
@@ -226,12 +234,30 @@ function App() {
                         <li key={option.value} id={`role-option-${option.value}`} role="option" aria-selected={isSelected}>
                           <button
                             type="button"
-                            className={`role-dropdown-option ${isSelected ? 'selected' : ''} ${isHighlighted ? 'highlighted' : ''}`}
+                            className={`w-full flex items-center justify-between text-left px-3 py-2 rounded-lg text-sm transition-all duration-200 ${
+                              isDark ? 'text-gray-200 hover:bg-slate-700 hover:text-white' : 'text-gray-700 hover:bg-gray-100'
+                            } ${
+                              isSelected
+                                ? isDark
+                                  ? 'bg-blue-600 text-white'
+                                  : 'bg-blue-100 text-blue-700'
+                                : ''
+                            } ${
+                              isHighlighted && !isSelected
+                                ? isDark
+                                  ? 'bg-slate-700'
+                                  : 'bg-gray-100'
+                                : ''
+                            }`}
                             onMouseEnter={() => setHighlightedRoleIndex(index)}
                             onClick={() => selectRoleAtIndex(index)}
                           >
                             <span>{option.label}</span>
-                            {isSelected && <span className="text-xs font-semibold text-primary-300">Current</span>}
+                            {isSelected && (
+                              <span className={`text-xs font-semibold ${isDark ? 'text-white/90' : 'text-blue-700'}`}>
+                                Current
+                              </span>
+                            )}
                           </button>
                         </li>
                       )

@@ -107,12 +107,45 @@ const Dashboard: React.FC = () => {
     .reduce((sum, transaction) => sum + transaction.amount, 0);
   const totalBalance = totalIncome - totalExpenses;
 
+  const getMonthlyIncomeSeries = () => {
+    const incomeByMonth = transactions
+      .filter((transaction) => transaction.type === 'income')
+      .reduce<Record<string, number>>((acc, transaction) => {
+        const monthKey = transaction.date.slice(0, 7);
+        acc[monthKey] = (acc[monthKey] || 0) + transaction.amount;
+        return acc;
+      }, {});
+
+    return Object.entries(incomeByMonth)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([, value]) => value);
+  };
+
+  const getPercentChange = (current: number, previous: number) => {
+    if (previous === 0) {
+      if (current === 0) return 0;
+      return 100;
+    }
+
+    return Math.abs(((current - previous) / previous) * 100);
+  };
+
+  const incomeSeries = getMonthlyIncomeSeries();
+  const latestIncome = incomeSeries[incomeSeries.length - 1] || totalIncome;
+  const previousIncome = incomeSeries[incomeSeries.length - 2] || 0;
+
+  const latestExpense = expensesData[expensesData.length - 1]?.expenses || 0;
+  const previousExpense = expensesData[expensesData.length - 2]?.expenses || 0;
+
+  const latestBalance = balanceData[balanceData.length - 1]?.balance || totalBalance;
+  const previousBalance = balanceData[balanceData.length - 2]?.balance || 0;
+
   const stats = [
     { 
       label: 'Total Balance', 
       value: totalBalance,
-      change: '+18.2%', 
-      trendDirection: 'up' as const,
+      change: getPercentChange(latestBalance, previousBalance),
+      trendDirection: latestBalance === previousBalance ? 'flat' as const : latestBalance > previousBalance ? 'up' as const : 'down' as const,
       metricType: 'balance' as const,
       icon: Wallet,
       color: 'bg-emerald-100 dark:bg-emerald-900/40',
@@ -122,8 +155,8 @@ const Dashboard: React.FC = () => {
     { 
       label: 'Total Income', 
       value: totalIncome,
-      change: '+5.3%', 
-      trendDirection: 'up' as const,
+      change: getPercentChange(latestIncome, previousIncome),
+      trendDirection: latestIncome === previousIncome ? 'flat' as const : latestIncome > previousIncome ? 'up' as const : 'down' as const,
       metricType: 'income' as const,
       icon: TrendingUp,
       color: 'bg-green-100 dark:bg-green-900/40',
@@ -133,8 +166,8 @@ const Dashboard: React.FC = () => {
     { 
       label: 'Total Expenses', 
       value: totalExpenses,
-      change: '2.1%',
-      trendDirection: 'down' as const,
+      change: getPercentChange(latestExpense, previousExpense),
+      trendDirection: latestExpense === previousExpense ? 'flat' as const : latestExpense > previousExpense ? 'up' as const : 'down' as const,
       metricType: 'expense' as const,
       icon: TrendingDown,
       color: 'bg-red-100 dark:bg-red-900/40',
@@ -150,27 +183,42 @@ const Dashboard: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         {stats.map((stat) => {
           const Icon = stat.icon;
-          const isTrendPositive = stat.metricType === 'expense'
-            ? stat.trendDirection === 'down'
-            : stat.trendDirection === 'up';
-          const trendArrow = stat.trendDirection === 'up' ? '↑' : '↓';
+          const isTrendPositive = stat.trendDirection === 'flat'
+            ? false
+            : stat.metricType === 'expense'
+              ? stat.trendDirection === 'down'
+              : stat.trendDirection === 'up';
+          const trendArrow = stat.trendDirection === 'flat' ? '→' : stat.trendDirection === 'up' ? '↑' : '↓';
+          const trendToneClass = stat.trendDirection === 'flat' ? 'text-gray-500 dark:text-gray-400' : isTrendPositive ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400';
+          const trendDescription = stat.metricType === 'expense'
+            ? stat.trendDirection === 'flat'
+              ? 'Expenses stayed the same'
+              : stat.trendDirection === 'up'
+                ? `Expenses increased by ${stat.change.toFixed(1)}%`
+                : `Expenses decreased by ${stat.change.toFixed(1)}%`
+            : stat.trendDirection === 'flat'
+              ? `${stat.label} stayed the same`
+              : stat.trendDirection === 'up'
+                ? `${stat.label} increased by ${stat.change.toFixed(1)}%`
+                : `${stat.label} decreased by ${stat.change.toFixed(1)}%`;
           return (
-            <Card key={stat.label} className="relative overflow-hidden">
+            <Card key={stat.label} className="relative overflow-hidden h-full">
               <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-transparent via-gray-200 to-transparent dark:via-dark-600" />
-              <div className="flex items-start justify-between mb-4">
+              <div className="flex items-start justify-between mb-4 min-h-[72px]">
                 <div>
                   <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">{stat.label}</p>
                   <p className={`text-2xl font-bold ${stat.valueColor}`}>
-                    <AnimatedNumber value={stat.value} formatter={(v) => formatCurrency(Math.round(v))} />
+                    <AnimatedNumber value={stat.value} formatter={(v) => formatCurrency(v)} />
                   </p>
                 </div>
                 <div className={`w-12 h-12 ${stat.color} rounded-lg flex items-center justify-center`}>
                   <Icon className={stat.iconColor} size={24} />
                 </div>
               </div>
-              <p className={`text-sm font-medium ${isTrendPositive ? 'text-green-600' : 'text-red-600'}`}>
-                {stat.change} {trendArrow}
+              <p className={`text-sm font-semibold ${trendToneClass}`}>
+                {stat.change.toFixed(1)}% {trendArrow}
               </p>
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{trendDescription}</p>
             </Card>
           );
         })}
@@ -267,8 +315,8 @@ const Dashboard: React.FC = () => {
       <Card className="p-6">
         <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-6">Spending by Category</h2>
         <div className="flex flex-col lg:flex-row items-center justify-between">
-          <div className="flex-1">
-            <ResponsiveContainer width="100%" height={350}>
+          <div className="flex-1 w-full h-[250px] min-h-[250px] flex items-center justify-center">
+            <ResponsiveContainer width="100%" height={250}>
               <PieChart>
                 <Pie
                   data={spendingData.filter((item) => !hiddenCategories.includes(item.name))}
@@ -276,7 +324,7 @@ const Dashboard: React.FC = () => {
                   cy="50%"
                   labelLine={false}
                   label={({ name, percent }) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}
-                  outerRadius={100}
+                  outerRadius="75%"
                   fill="#8884d8"
                   dataKey="value"
                 >

@@ -143,6 +143,14 @@ const Transactions: React.FC = () => {
         />
       )}
 
+      {!isAdmin && (
+        <Card className="mb-8 border border-blue-200 dark:border-blue-900/60 bg-blue-50/60 dark:bg-blue-900/20">
+          <p className="text-sm text-blue-700 dark:text-blue-300">
+            Viewer mode: you can view data only. Add, edit, and delete actions are hidden.
+          </p>
+        </Card>
+      )}
+
       {isAdmin && (
         <Card className="mb-8">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
@@ -204,8 +212,8 @@ const Transactions: React.FC = () => {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-        <Card>
-          <div className="flex items-center justify-between">
+        <Card className="h-full">
+          <div className="flex items-center justify-between min-h-[72px]">
             <div>
               <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Total Income</p>
               <p className="text-2xl font-bold text-green-600">{formatCurrency(summary.totalIncome)}</p>
@@ -216,8 +224,8 @@ const Transactions: React.FC = () => {
           </div>
         </Card>
 
-        <Card>
-          <div className="flex items-center justify-between">
+        <Card className="h-full">
+          <div className="flex items-center justify-between min-h-[72px]">
             <div>
               <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Total Expenses</p>
               <p className="text-2xl font-bold text-red-600">{formatCurrency(summary.totalExpense)}</p>
@@ -296,15 +304,25 @@ const Transactions: React.FC = () => {
                       colSpan={isAdmin ? 5 : 4}
                       className="py-16 px-4 text-center"
                     >
-                      <div className="mx-auto max-w-md rounded-2xl border border-dashed border-gray-300 dark:border-dark-600 bg-gray-50/70 dark:bg-dark-700/40 p-8">
-                        <div className="mx-auto w-14 h-14 rounded-2xl bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
-                          <FolderSearch className="text-primary-600 dark:text-primary-300" size={24} />
+                      {transactions.length === 0 ? (
+                        <div className="mx-auto max-w-md rounded-2xl border border-dashed border-gray-300 dark:border-dark-600 bg-gray-50/70 dark:bg-dark-700/40 p-8 text-center flex flex-col items-center justify-center">
+                          <div className="mx-auto w-14 h-14 rounded-2xl bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
+                            <FolderSearch className="text-primary-600 dark:text-primary-300" size={24} />
+                          </div>
+                          <p className="mt-4 text-lg font-semibold text-gray-900 dark:text-white">No transactions yet.</p>
+                          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Add your first transaction to get started.</p>
                         </div>
-                        <p className="mt-4 text-lg font-semibold text-gray-900 dark:text-white">No transactions found</p>
-                        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                          No matches for your current filters yet. Try adjusting search or type filter.
-                        </p>
-                      </div>
+                      ) : (
+                        <div className="mx-auto max-w-md rounded-2xl border border-dashed border-gray-300 dark:border-dark-600 bg-gray-50/70 dark:bg-dark-700/40 p-8">
+                          <div className="mx-auto w-14 h-14 rounded-2xl bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
+                            <FolderSearch className="text-primary-600 dark:text-primary-300" size={24} />
+                          </div>
+                          <p className="mt-4 text-lg font-semibold text-gray-900 dark:text-white">No transactions found</p>
+                          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                            No matches for your current filters yet. Try adjusting search or type filter.
+                          </p>
+                        </div>
+                      )}
                     </td>
                   </tr>
                 )}

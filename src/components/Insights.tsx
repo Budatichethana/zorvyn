@@ -1,5 +1,5 @@
 import React from 'react';
-import { PiggyBank, PieChart, TrendingUp, TrendingDown, Repeat, Sparkles } from 'lucide-react';
+import { PiggyBank, PieChart, TrendingUp, TrendingDown, Repeat, Sparkles, Minus } from 'lucide-react';
 import { formatCurrency } from '../utils/currency';
 import Card from './ui/Card';
 import SectionContainer from './ui/SectionContainer';
@@ -86,9 +86,15 @@ const Insights: React.FC = () => {
     ? Math.round((incomeTrendDelta / previousMonth.income) * 100)
     : 0;
 
-  const trendDirection = expenseTrendDelta > 0 ? 'increased' : expenseTrendDelta < 0 ? 'decreased' : 'stayed flat';
-  const trendIconClass = expenseTrendDelta <= 0 ? 'text-emerald-600 dark:text-emerald-300' : 'text-red-600 dark:text-red-300';
-  const TrendIcon = expenseTrendDelta <= 0 ? TrendingDown : TrendingUp;
+  const expenseTrendDirection = expenseTrendDelta > 0 ? 'up' : expenseTrendDelta < 0 ? 'down' : 'flat';
+  const trendDirection = expenseTrendDirection === 'up' ? 'increased' : expenseTrendDirection === 'down' ? 'decreased' : 'stayed flat';
+  const trendIconClass =
+    expenseTrendDirection === 'flat'
+      ? 'text-gray-500 dark:text-gray-400'
+      : expenseTrendDirection === 'up'
+        ? 'text-red-600 dark:text-red-300'
+        : 'text-emerald-600 dark:text-emerald-300';
+  const TrendIcon = expenseTrendDirection === 'flat' ? Minus : expenseTrendDirection === 'up' ? TrendingUp : TrendingDown;
 
   const topCategory = categoryShare[0];
 
@@ -139,7 +145,7 @@ const Insights: React.FC = () => {
     {
       icon: TrendIcon,
       label: 'Monthly Expense Trend',
-      value: `${expenseTrendDelta >= 0 ? '+' : ''}${Math.abs(expenseTrendPercent)}%`,
+      value: `${Math.abs(expenseTrendPercent)}% ${expenseTrendDirection === 'flat' ? '→' : expenseTrendDirection === 'up' ? '↑' : '↓'}`,
       helper: `Expenses ${trendDirection}`,
       helperClass: trendIconClass,
     },
